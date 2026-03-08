@@ -24,8 +24,9 @@ export async function PATCH(req: NextRequest) {
   const { id } = await req.json()
   if (!id) return err('subscription id required')
   const supabase = createServiceClient()
-  const { data: sub } = await supabase.from('subscriptions').select('user_id').eq('id', id).single()
+  const { data: sub } = await supabase.from('subscriptions').select('user_id, status').eq('id', id).single()
   if (!sub || sub.user_id !== user.id) return err('Not found', 404)
+  if (sub.status === 'canceled') return err('Subscription already canceled', 400)
   const { data, error } = await supabase
     .from('subscriptions')
     .update({ status: 'canceled', updated_at: new Date().toISOString() })
