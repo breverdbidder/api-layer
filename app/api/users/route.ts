@@ -18,7 +18,10 @@ export async function PATCH(req: NextRequest) {
   const user = await getAuthUser(req)
   if (!user) return err('Unauthorized', 401)
   const body = await req.json()
-  const allowed = { full_name: body.full_name }
+  if (body.full_name !== undefined && (typeof body.full_name !== 'string' || body.full_name.trim().length === 0 || body.full_name.length > 200)) {
+    return err('full_name must be 1-200 characters', 400)
+  }
+  const allowed = { full_name: body.full_name?.trim() }
   Object.keys(allowed).forEach(k => allowed[k as keyof typeof allowed] === undefined && delete allowed[k as keyof typeof allowed])
   const supabase = createServiceClient()
   const { data, error } = await supabase
